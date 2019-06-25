@@ -1,5 +1,6 @@
 module ActsAsPurchasable
   extend ActiveSupport::Concern
+  
 
   module ActiveRecord
     def acts_as_purchasable(*options)
@@ -28,10 +29,21 @@ module ActsAsPurchasable
     has_many :purchased_orders, -> { where(state: EffectiveOrders::PURCHASED).order(:purchased_at) },
       through: :order_items, class_name: 'Effective::Order', source: :order
 
-    # Database max integer value is 2147483647.  So let's round that down and use a max/min of $20 million (2000000000)
+    if EffectiveOrders.price_validation.nil? || EffectiveOrders.price_validation_numericality.nil?
+      Rails.logger.warn "update EffectiveOrders initializer; price config option(s) are missing"
+      EffectiveOrders.price_validation  = {numericality: { greater_than_or_equal_to: -2000000000, message: "minimum price is -$20,000,000" }}
+    end
+
     validates :price, presence: true
-    validates :price, numericality: { less_than_or_equal_to: 2000000000, message: 'maximum price is $20,000,000' }
-    validates :price, numericality: { greater_than_or_equal_to: -2000000000, message: 'minimum price is -$20,000,000' }
+    #IF order input is a number, default should be max $20 million based on DB constraints. If message should indicate, they can override in initializers -- or translation yamls. 
+    if EffectiveOrders.price_validation_numericality.present? 
+      validates :price, numericality: { less_than_or_equal_to: 2000000000, message: "maximum price is $20,000,000" }
+    end
+    if EffectiveOrders.price_validator_class
+      validates_with EffectiveOrders.price_validator_class, _merge_attributes(:price, EffectiveOrders[:price_validation])
+    elsif EffectiveOrders.price_validation
+      validates :price, EffectiveOrders.price_validation
+    end
 
     validates :tax_exempt, inclusion: { in: [true, false] }
 

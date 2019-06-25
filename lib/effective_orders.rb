@@ -66,6 +66,10 @@ module EffectiveOrders
   mattr_accessor :subscriptions  # Stripe subscriptions
   mattr_accessor :trial          # Trial mode
 
+  mattr_accessor :price_validator_class
+  mattr_accessor :price_validation_numericality
+  mattr_accessor :price_validation
+
   def self.setup
     yield self
   end
