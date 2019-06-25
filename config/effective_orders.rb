@@ -270,7 +270,7 @@ EffectiveOrders.setup do |config|
   #config.price_validator_class = MyNumericalityValidator
   config.price_validation_numericality = true #validates a db max
   minimum_in_cents = 0
-  formatted_minimum_in_dollars = "$%.2f" % (minimum_in_cents / 100.0).round(2))
+  formatted_minimum_in_dollars = "$%.2f" % (minimum_in_cents / 100.0).round(2)
   config.price_validation = { numericality: { 
     #greater_than_or_equal_to: minimum_in_cents, message: I18n.t('messages.price.greater_than_or_equal', default: "Price must be greater than %{formatted_minimum_in_dollars}", "formatted_minimum_in_dollars": ("$%.2f" % (minimum_in_cents / 100.0).round(2)))
     greater_than_or_equal_to: minimum_in_cents, 
